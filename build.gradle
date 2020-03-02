@@ -1,3 +1,4 @@
+
 // 1) configure the requirements to run the build script
 buildscript {
     // set a custom property
@@ -32,7 +33,9 @@ dependencies {
     testImplementation('org.springframework.boot:spring-boot-starter-test') {
         exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
     }
-    testImplementation('org.springframework.security:spring-security-test')
+}
+test {
+    useJUnitPlatform()
 }
 bootRun.environment([
         "WELCOME_MESSAGE": "hello",
@@ -41,6 +44,7 @@ bootRun.environment([
 test.environment([
         "WELCOME_MESSAGE": "Hello from test",
 ])
+
 bootJar {
-archiveName="pal-tracker.jar"
+    archiveFileName ="pal-tracker.jar"
 }
