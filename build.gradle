@@ -1,3 +1,5 @@
+import org.flywaydb.gradle.task.FlywayMigrateTask
+
 // 1) configure the requirements to run the build script
 buildscript {
     // set a custom property
@@ -12,16 +14,22 @@ buildscript {
     // we need the spring boot plugin to run the build script
     dependencies {
         classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+        classpath 'mysql:mysql-connector-java:8.0.13'
     }
+}
+plugins {
+    id "org.flywaydb.flyway" version "5.2.1"
 }
 // 2) apply some plugins
 apply plugin: 'java'
 apply plugin: 'org.springframework.boot'
 apply plugin: 'io.spring.dependency-management'
+apply plugin: 'io.spring.dependency-management'
 // 3) set some standard properties
 version = '0.0.1-SNAPSHOT'
 sourceCompatibility = 1.8
 // 4) repos to search to resolve dependencies for the project
+
 repositories {
     mavenCentral()
 }
@@ -34,17 +42,30 @@ dependencies {
         exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
     }
     testImplementation('org.springframework.security:spring-security-test')
+    implementation ('org.springframework.boot:spring-boot-starter-jdbc')
+    implementation ('mysql:mysql-connector-java')
 }
 
 test {
     useJUnitPlatform()
 }
 bootRun.environment([
+        "SPRING_DATASOURCE_URL": "jdbc:mysql://localhost:3306/tracker_dev?user=tracker&useSSL=false&useTimezone=true&serverTimezone=UTC&useLegacyDatetimeCode=false",
         "WELCOME_MESSAGE": "hello",
 ])
 bootJar {
     archiveName = "pal-tracker.jar"
 }
 test.environment([
+        "SPRING_DATASOURCE_URL": "jdbc:mysql://localhost:3306/tracker_test?user=tracker&useSSL=false&useTimezone=true&serverTimezone=UTC&useLegacyDatetimeCode=false",
         "WELCOME_MESSAGE": "Hello from test",
 ])
+flyway {
+    url = "jdbc:mysql://localhost:3306/tracker_dev?user=tracker&useSSL=false&useTimezone=true&serverTimezone=UTC&useLegacyDatetimeCode=false"
+    user = "tracker"
+    password = ""
+    locations = ["filesystem:databases/tracker/migrations"]
+}
+task testMigrate(type: FlywayMigrateTask) {
+    url = "jdbc:mysql://localhost:3306/tracker_test?user=tracker&useSSL=false&useTimezone=true&serverTimezone=UTC&useLegacyDatetimeCode=false"
+}
